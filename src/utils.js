@@ -117,7 +117,11 @@ export function selectAll(selector) {
 
     const nodes = [];
     for (const sel of selector) {
-        nodes.push(...document.querySelectorAll(sel));
+        if(sel instanceof HTMLElement) {
+            nodes.push(...[sel]);
+        } else {
+            nodes.push(...document.querySelectorAll(sel));
+        }
     }
 
     return nodes;

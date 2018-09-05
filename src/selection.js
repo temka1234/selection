@@ -27,21 +27,37 @@ function Selection(options = {}) {
             selectables: [],
 
             startareas: ['html'],
-            boundaries: ['html']
+            boundaries: ['html'],
+            appendTo: doc.body
         }, options),
 
         // Store for keepSelection
         _selectedStore: [],
 
         // Create area element
-        _areaElement: _.createElement('div', doc.body),
+        _areaElement: null,
+        _targetElement: null,
 
         _init() {
-            _.css(that._areaElement, {
-                top: 0,
-                left: 0,
-                position: 'fixed'
-            });
+            that._targetElement = _.selectAll(that.options.appendTo)[0];
+            let css = {};
+            if(that._targetElement) {
+                css = {
+                    top: 0,
+                    left: 0,
+                    position: 'absolute'
+                };
+            } else {
+                that._targetElement = doc.body;
+                css = {
+                    top: 0,
+                    left: 0,
+                    position: 'fixed'
+                };
+            }
+
+            that._areaElement = _.createElement('div', that._targetElement);
+            _.css(that._areaElement, css);
 
             // Bind events
             _.on(doc, 'mousedown', that._onTapStart);
@@ -70,6 +86,11 @@ function Selection(options = {}) {
             // Save start coordinates
             that._lastX = (touch || evt).clientX;
             that._lastY = (touch || evt).clientY;
+
+            let relativeBounds = that._targetElement.getBoundingClientRect();
+            that._lastX -= relativeBounds.left;
+            that._lastY -= relativeBounds.top;
+
             that._singleClick = true; // To detect single-click
 
             // Resolve selectors
@@ -78,7 +99,7 @@ function Selection(options = {}) {
             containers.forEach(con => that._selectables.push(...con.getElementsByTagName('*')));
 
             // Save current boundary
-            that._targetBoundary = that._boundaries.find(el => _.intersects(el, target)).getBoundingClientRect();
+            that._boundaryTarget = that._boundaries.find(el => _.intersects(el, target));
             that._touchedElements = [];
             that._changedElements = {
                 added: [],
@@ -119,8 +140,9 @@ function Selection(options = {}) {
 
         _delayedTapMove(evt) {
             const touch = evt.touches && evt.touches[0];
-            const x = (touch || evt).clientX;
-            const y = (touch || evt).clientY;
+            let relativeBounds = that._targetElement.getBoundingClientRect();
+            const x = (touch || evt).clientX - relativeBounds.left;
+            const y = (touch || evt).clientY - relativeBounds.top;
 
             // Check pixel threshold
             if (abs((x + y) - (that._lastX + that._lastY)) >= that.options.startThreshold) {
@@ -152,15 +174,20 @@ function Selection(options = {}) {
         },
 
         _updateArea(evt) {
-            const brect = that._targetBoundary;
+            const brect = that._boundaryTarget.getBoundingClientRect();
             const touch = evt.touches && evt.touches[0];
-            let x2 = (touch || evt).clientX;
-            let y2 = (touch || evt).clientY;
+            let clientX = (touch || evt).clientX;
+            let clientY = (touch || evt).clientY;
 
-            if (x2 < brect.left) x2 = brect.left;
-            if (y2 < brect.top) y2 = brect.top;
-            if (x2 > brect.left + brect.width) x2 = brect.left + brect.width;
-            if (y2 > brect.top + brect.height) y2 = brect.top + brect.height;
+            let relativeBounds = that._targetElement.getBoundingClientRect();
+
+            let x2 = clientX - relativeBounds.left;
+            let y2 = clientY - relativeBounds.top;
+
+            if (x2 < that._boundaryTarget.offsetLeft) x2 = that._boundaryTarget.offsetLeft;
+            if (y2 < that._boundaryTarget.offsetTop) y2 = that._boundaryTarget.offsetTop;
+            if (x2 > that._boundaryTarget.offsetLeft + brect.width) x2 = that._boundaryTarget.offsetLeft + brect.width;
+            if (y2 > that._boundaryTarget.offsetTop + brect.height) y2 = that._boundaryTarget.offsetTop + brect.height;
 
             const x3 = min(that._lastX, x2);
             const y3 = min(that._lastY, y2);
