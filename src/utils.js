@@ -117,7 +117,7 @@ export function selectAll(selector) {
 
     const nodes = [];
     for (const sel of selector) {
-        if(sel instanceof HTMLElement) {
+        if(sel instanceof Element) {
             nodes.push(...[sel]);
         } else {
             nodes.push(...document.querySelectorAll(sel));
