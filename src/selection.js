@@ -12,11 +12,6 @@ const doc = document;
 const preventDefault = e => e.preventDefault();
 
 function Selection(options = {}) {
-    const MOUSE_LEFT = 1;
-    const MOUSE_CENTER = 2;
-    const MOUSE_RIGHT = 4;
-    const MOUSE_BTNS = 7;
-
     const that = {
         options: Object.assign({
             class: 'selection-area',
@@ -28,8 +23,6 @@ function Selection(options = {}) {
 
             containers: [],
             selectables: [],
-
-            btns: MOUSE_LEFT | MOUSE_CENTER | MOUSE_RIGHT,
 
             startareas: ['html'],
             boundaries: ['html'],
@@ -130,9 +123,6 @@ function Selection(options = {}) {
         _onSingleTap(evt) {
             const touch = evt.touches && evt.touches[0];
             const target = (touch || evt).target;
-            if(!touch && !that._isButtonEnabled(evt.buttons)) {
-                return;
-            }
 
             // Check if the element is selectable
             if (!that._selectables.includes(target)) return;
@@ -148,9 +138,6 @@ function Selection(options = {}) {
 
         _delayedTapMove(evt) {
             const touch = evt.touches && evt.touches[0];
-            if(!touch && !that._isButtonEnabled(evt.buttons)) {
-                return;
-            }
 
             let relativeBounds = that._targetElement.getBoundingClientRect();
             const x = (touch || evt).clientX - relativeBounds.left;
@@ -179,9 +166,6 @@ function Selection(options = {}) {
 
         _onTapMove(evt) {
             const touch = evt.touches && evt.touches[0];
-            if(!touch && !that._isButtonEnabled(evt.buttons)) {
-                return;
-            }
 
             that._updateArea(evt);
             that._updatedTouchingElements();
@@ -297,9 +281,6 @@ function Selection(options = {}) {
             }
         },
 
-        _isButtonEnabled(button) {
-            return that.options.btns & button;
-        },
 
         /**
          * Saves the current selection for the next selecion.
