@@ -9,6 +9,9 @@ const options = {
     // The container is also the boundary in this case
     boundaries: ['.box-wrap'],
 
+    // Mouse buttons to activate selection: 1 (LEFT) | 2 (CENTER) | 4 (RIGHT)
+    btns: 7,
+
     onSelect(evt) {
 
         // Check if clicked element is already selected

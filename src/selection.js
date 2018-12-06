@@ -12,6 +12,10 @@ const doc = document;
 const preventDefault = e => e.preventDefault();
 
 function Selection(options = {}) {
+    const MOUSE_LEFT = 1;
+    const MOUSE_CENTER = 2;
+    const MOUSE_RIGHT = 4;
+
     const that = {
         options: Object.assign({
             class: 'selection-area',
@@ -23,6 +27,8 @@ function Selection(options = {}) {
 
             containers: [],
             selectables: [],
+
+            btns: MOUSE_LEFT | MOUSE_CENTER | MOUSE_RIGHT,
 
             startareas: ['html'],
             boundaries: ['html'],
@@ -71,6 +77,10 @@ function Selection(options = {}) {
         _onTapStart(evt) {
             const touch = evt.touches && evt.touches[0];
             const target = (touch || evt).target;
+
+            if(!touch && !that._isButtonEnabled(evt.buttons)) {
+                return;
+            }
 
             const startAreas = _.selectAll(that.options.startareas);
             that._boundaries = _.selectAll(that.options.boundaries);
@@ -281,6 +291,9 @@ function Selection(options = {}) {
             }
         },
 
+        _isButtonEnabled(button) {
+            return that.options.btns & button;
+        },
 
         /**
          * Saves the current selection for the next selecion.
